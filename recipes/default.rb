@@ -28,9 +28,9 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
     deb_src false
     keyserver 'keyserver.ubuntu.com'
     key '323293EE'
-    action :add
+    action :nothing
     notifies :run, 'execute[apt-get update mercurial]', :immediately
-  end
+  end.run_action(:add)
 
   execute 'apt-get update mercurial' do
     command 'apt-get update'
@@ -40,5 +40,5 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
 end
 
 package 'mercurial' do
-  action :upgrade
+  action :install
 end
