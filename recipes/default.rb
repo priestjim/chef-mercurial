@@ -26,10 +26,9 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
     distribution node['lsb']['codename']
     components ['main']
     deb_src false
-    cache_rebuild true
     keyserver 'keyserver.ubuntu.com'
     key '323293EE'
-    action :nothing
+    action :add
     notifies :run, 'execute[apt-get update mercurial]', :immediately
   end
 
