@@ -17,6 +17,23 @@
 # limitations under the License.
 #
 
-package "mercurial" do
+if node['mercurial']['use_ppa'] && platform?('ubuntu')
+
+  include_recipe 'apt'
+
+  apt_repository 'mercurial' do
+    uri node['mercurial']['ppa_url']
+    distribution node['lsb']['codename']
+    components ['main']
+    deb_src false
+    cache_rebuild true
+    keyserver 'keyserver.ubuntu.com'
+    key '323293EE'
+    action :add
+  end
+      
+end
+
+package 'mercurial' do
   action :upgrade
 end
