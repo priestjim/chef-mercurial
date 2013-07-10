@@ -29,9 +29,16 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
     cache_rebuild true
     keyserver 'keyserver.ubuntu.com'
     key '323293EE'
-    action :add
+    action :nothing
+    notifies :run, 'execute[apt-get update mercurial]', :immediately
   end
-      
+
+  execute 'apt-get update mercurial' do
+    command 'apt-get update'
+    action :nothing
+  end
+
+
 end
 
 package 'mercurial' do
