@@ -38,7 +38,6 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
     action :nothing
   end
 
-
 end
 
 package 'mercurial' do
