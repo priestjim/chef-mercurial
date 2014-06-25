@@ -29,13 +29,13 @@ class Chef
         class Mercurial < Chef::Provider
 
             include Chef::Mixin::ShellOut
-            
+
             def whyrun_supported?
                 true
             end
 
             def load_current_resource
-                @is_branch = @new_resource.branch                
+                @is_branch = @new_resource.branch
                 @current_revision = find_current_revision
                 @current_branch = find_current_branch
                 @target_revision = find_target_revision
@@ -76,11 +76,11 @@ class Chef
                     a.failure_message(Chef::Exceptions::InvalidMercurialRepository,
                         "You have specified an invalid Mercurial repository. Currently supported repositories must begin with either ssh://, http:// or https://")
                 end
-            end 
+            end
 
             # Sync Action
             def action_sync
-                if existing_mercurial_clone?                    
+                if existing_mercurial_clone?
                     Chef::Log.debug "Found an existing #{@new_resource.name} tree. current branch/revision: #{@current_branch}/#{@current_revision} :: target revision: #{@target_revision}#{@is_branch ? ' (named branch)' : ''}"
                     pull
                     select_branch_or_revision
@@ -89,7 +89,7 @@ class Chef
                 end
             end
 
-            # Clone or Checkout       
+            # Clone or Checkout
             def action_checkout
                 if ((target_dir_non_existent_or_empty?) && (! existing_mercurial_clone?))
                     Chef::Log.debug "Cloning #{@new_resource} on #{@new_resource.destination}"
@@ -106,7 +106,7 @@ class Chef
             def action_export
                 if (::File.exists?(::File.join(@new_resource.destination,".hg")) ||
                                 ::File.exists?(::File.join(@new_resource.destination,".hgignore")))
-                    converge_by("complete the export by removing HG metadata from #{@new_resource.destination} after checkout") do                    
+                    converge_by("complete the export by removing HG metadata from #{@new_resource.destination} after checkout") do
                         FileUtils.rm_rf(::File.join(@new_resource.destination,".hg"))
                         FileUtils.rm_rf(::File.join(@new_resource.destination,".hgignore"))
                     end
@@ -114,7 +114,7 @@ class Chef
             end
 
             def clone
-                Chef::Log.info "#{@new_resource} cloning repo #{@new_resource.repository} to #{@new_resource.destination}"                  
+                Chef::Log.info "#{@new_resource} cloning repo #{@new_resource.repository} to #{@new_resource.destination}"
                 args = []
                 ssh_wrapper = 'ssh'
                 ssh_wrapper = @new_resource.ssh_wrapper if @new_resource.ssh_wrapper
@@ -130,7 +130,7 @@ class Chef
             end
 
             def pull
-                Chef::Log.info "#{@new_resource} fetching updates" 
+                Chef::Log.info "#{@new_resource} fetching updates"
                 args = []
                 ssh_wrapper = 'ssh'
                 ssh_wrapper = @new_resource.ssh_wrapper if @new_resource.ssh_wrapper
@@ -186,7 +186,7 @@ class Chef
             end
 
             def find_target_revision(from_file = false)
-                Chef::Log.debug("#{@new_resource} finding target mercurial revision#{' (from file)' if from_file}")  
+                Chef::Log.debug("#{@new_resource} finding target mercurial revision#{' (from file)' if from_file}")
                 if from_file
                     if ::File.directory?(::File.join(cwd, ".hg"))
                         # 255 is returned when we're not in a mercurial repo. this is fine
@@ -198,10 +198,10 @@ class Chef
                     end
                 else
                     unless @is_branch
-                        Chef::Log.debug("#{@new_resource} finding target mercurial revision as a normal revision")  
+                        Chef::Log.debug("#{@new_resource} finding target mercurial revision as a normal revision")
                         hg_hash?(@new_resource.revision) ? @new_resource.revision : 'tip'
                     else
-                        Chef::Log.debug("#{@new_resource} finding target mercurial revision as a named branch")  
+                        Chef::Log.debug("#{@new_resource} finding target mercurial revision as a named branch")
                         @new_resource.revision
                     end
                 end
@@ -229,8 +229,12 @@ class Chef
             end
 
             def hg_version?
-                    version_cmd = "hg --version | head -1 | sed -re 's/.*version ([0-9\\.]+).+/\\1/g'"
-                    hg_ver = shell_out!(version_cmd, run_options(:log_level => :info)).stdout.strip     
+                    if node['platform_family'].eql?('mac_os_x')
+                        version_cmd = "hg --version | head -1 | sed -Ee 's/.*version ([0-9\\.]+).+/\\1/g'"
+                    else
+                        version_cmd = "hg --version | head -1 | sed -re 's/.*version ([0-9\\.]+).+/\\1/g'"
+                    end
+                    hg_ver = shell_out!(version_cmd, run_options(:log_level => :info)).stdout.strip
                     Chef::Log.info "Detected Mercurial version: #{hg_ver}"
                     hg_ver
             end
