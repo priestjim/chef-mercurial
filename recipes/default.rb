@@ -40,5 +40,6 @@ if node['mercurial']['use_ppa'] && platform?('ubuntu')
 end
 
 package 'mercurial' do
+  provider(Chef::Provider::Package::Homebrew) if platform_family?('mac_os_x')
   action :install
 end
